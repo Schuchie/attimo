@@ -1,5 +1,6 @@
-from module.core.factory import create_app
+from module.core.factory import CoreFactory
 
 if __name__ == "__main__":
-    app = create_app()
+    coreFactory = CoreFactory()
+    app = coreFactory.get_facade()
     app.run()
