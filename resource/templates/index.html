@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attimo Gallery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F3E9D6] p-4">
+    <div class="max-w-2xl mx-auto">
+        <!-- Logo and Title -->
+        <div class="flex items-center justify-center mb-6 gap-3">
+            <img src="{{ url_for('static', filename='images/attimo_transparent.png') }}" alt="Attimo Logo" class="w-12 h-auto">
+            <h1 class="text-3xl font-bold text-gray-800">Attimo</h1>
+        </div>
+
+        <!-- Upload Form -->
+        <form action="/upload" method="post" enctype="multipart/form-data" class="flex items-center justify-between gap-2 mb-6">
+            <input type="file" name="image" accept="image/*" required class="flex-1 text-sm">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload</button>
+        </form>
+
+        <!-- Image Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {% for image in images %}
+            <div class="relative group">
+                <img src="{{ url_for('static', filename='uploads/' ~ image) }}" alt="{{ image }}" class="w-full h-auto rounded shadow">
+
+                <!-- Delete Button (shows on hover or always tapable on mobile) -->
+                <form action="{{ url_for('delete', filename=image) }}" method="post" class="absolute top-1 right-1">
+                    <button type="submit" class="bg-red-500 text-white rounded-full px-2 py-1 text-xs opacity-80 hover:opacity-100">✖</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
