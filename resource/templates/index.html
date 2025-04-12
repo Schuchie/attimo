@@ -6,33 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#F3E9D6] p-4">
-    <div class="max-w-2xl mx-auto">
-        <!-- Logo and Title -->
-        <div class="flex items-center justify-center mb-6 gap-3">
-            <img src="{{ url_for('static', filename='images/attimo_transparent.png') }}" alt="Attimo Logo" class="w-12 h-auto">
-            <h1 class="text-3xl font-bold text-gray-800">Attimo</h1>
+<body class="bg-[#F3E9D6]">
+
+    <!-- Header -->
+    <header class="sticky top-0 bg-[#F3E9D6] z-10 border-b border-b-gray-300 px-4 py-2 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2">
+            <img src="{{ url_for('static', filename='images/attimo_transparent_without_name.png') }}" alt="Attimo Logo" class="w-8 h-auto">
+            <h1 class="text-xl font-semibold text-gray-800">Attimo</h1>
         </div>
-
-        <!-- Upload Form -->
-        <form action="/upload" method="post" enctype="multipart/form-data" class="flex items-center justify-between gap-2 mb-6">
-            <input type="file" name="image" accept="image/*" required class="flex-1 text-sm">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload</button>
+        <form action="/upload" method="post" enctype="multipart/form-data" class="flex items-center gap-2">
+            <input type="file" name="image" accept="image/*" required class="hidden" id="imageInput" onchange="this.form.submit()">
+            <label for="imageInput" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded cursor-pointer text-sm">Upload</label>
         </form>
+    </header>
 
-        <!-- Image Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+    <!-- Gallery -->
+    <main class="p-4 max-w-5xl mx-auto">
+        <div class="columns-2 sm:columns-3 md:columns-4 gap-4 space-y-4">
             {% for image in images %}
-            <div class="relative group">
-                <img src="{{ url_for('static', filename='uploads/' ~ image) }}" alt="{{ image }}" class="w-full h-auto rounded shadow">
+            <div class="break-inside-avoid relative group">
+                <img src="{{ url_for('static', filename='uploads/' ~ image) }}" alt="{{ image }}" class="w-full rounded shadow-sm">
 
-                <!-- Delete Button (shows on hover or always tapable on mobile) -->
-                <form action="{{ url_for('delete', filename=image) }}" method="post" class="absolute top-1 right-1">
-                    <button type="submit" class="bg-red-500 text-white rounded-full px-2 py-1 text-xs opacity-80 hover:opacity-100">✖</button>
+                <!-- Delete Button -->
+                <form action="{{ url_for('delete', filename=image) }}" method="post" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                    <button type="submit" class="bg-red-500 text-white rounded-full px-2 py-1 text-xs shadow hover:bg-red-600">✖</button>
                 </form>
             </div>
             {% endfor %}
         </div>
-    </div>
+    </main>
+
 </body>
 </html>

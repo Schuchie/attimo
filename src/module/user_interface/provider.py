@@ -10,7 +10,7 @@ class UiProvider:
         self.app.config['TEMPLATES_AUTO_RELOAD'] = True
         self.app.config['TEMPLATE_FOLDER'] = root_dir  / "resource" / "templates"  #os.path.join(os.path.dirname(__file__), 'templates')
         self.app.config['STATIC_FOLDER'] = root_dir / "static"
-        self.app.config['UPLOAD_FOLDER'] = root_dir / "resource" / "uploads"
+        self.app.config['UPLOAD_FOLDER'] = root_dir / "static" / "uploads"
         self.app.template_folder = self.app.config['TEMPLATE_FOLDER']
         self.app.static_folder = self.app.config['STATIC_FOLDER']
         self.upload_folder = self.app.config['UPLOAD_FOLDER']
