@@ -9,14 +9,15 @@
 <body class="bg-[#F3E9D6] min-h-screen">
 
     <!-- Header -->
-    <header class="sticky top-0 bg-[#F3E9D6] z-10 border-b border-b-gray-300 px-4 py-2 flex justify-between items-center shadow-sm">
+    <header class="sticky top-0 bg-[#F3E9D6] z-10 border-b border-[#5F8B82]/30 px-4 py-2 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-2">
             <img src="{{ url_for('static', filename='images/attimo_transparent_without_name.png') }}" alt="Attimo Logo" class="w-8 h-auto">
-            <h1 class="text-xl font-semibold text-gray-800">Attimo</h1>
+            <h1 class="text-xl font-bold text-[#4E3629]">Attimo</h1>
         </div>
         <form action="/upload" method="post" enctype="multipart/form-data" class="flex items-center gap-2">
-            <input type="file" name="image" accept="image/*" required class="hidden" id="imageInput" onchange="this.form.submit()">
-            <label for="imageInput" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow cursor-pointer text-sm">
+            <input type="file" name="images" accept="image/*" required class="hidden" id="imageInput" onchange="this.form.submit()" multiple>
+            <label for="imageInput"
+                class="bg-[#C56A41] hover:bg-[#b45f3a] text-white px-4 py-2 rounded shadow cursor-pointer text-sm transition">
                 📤 Upload Image
             </label>
         </form>
@@ -27,18 +28,23 @@
         {% if images %}
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {% for image in images %}
-                <div class="relative group overflow-hidden rounded-lg shadow aspect-[3/4]">
-                    <img src="{{ url_for('static', filename='uploads/' ~ image) }}" alt="{{ image }}" class="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105">
+                <div class="relative group overflow-hidden rounded-lg shadow aspect-[3/4] border border-[#5F8B82]/20">
+                    <img src="{{ url_for('static', filename='uploads/preview/' ~ image) }}" alt="{{ image }}"
+                        class="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105">
 
                     <!-- Delete Button -->
-                    <form action="{{ url_for('delete', filename=image) }}" method="post" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
-                        <button type="submit"  class="bg-red-100 text-red-600 hover:bg-red-200 w-6 h-6 rounded-full flex items-center justify-center text-sm transition">✕</button>
+                    <form action="{{ url_for('delete', filename=image) }}" method="post"
+                        class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                        <button type="submit"
+                            class="bg-[#E49A56] text-white hover:bg-[#d88c4e] w-6 h-6 rounded-full flex items-center justify-center text-sm transition">
+                            ✕
+                        </button>
                     </form>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <p class="text-center text-gray-600 mt-16 text-lg">No images yet. Be the first to capture a moment 📷</p>
+            <p class="text-center text-[#4E3629] mt-16 text-lg">No images yet. Be the first to capture a moment 📷</p>
         {% endif %}
     </main>
 
