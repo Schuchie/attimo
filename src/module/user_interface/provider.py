@@ -1,6 +1,7 @@
 from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for
 import os
+from datetime import datetime
 
 
 class UiProvider:
@@ -26,12 +27,30 @@ class UiProvider:
         
         @self.app.route('/')
         def index():
-            images = self.image_provider.get_images()
-            images = sorted(images, reverse=True)
-            return render_template('index.html', images=images)
+            sort_by = request.args.get("sort", "added")  # "created" or "added"
+
+            image_meta_dict = self.image_provider.get_images()  # {uuid: meta}
+            image_items = list(image_meta_dict.items())  # [(filename, metadata), ...]
+
+            def get_sort_value(item):
+                attr = item[1].get("attribute", {})
+                dt_str = attr.get("created_datetime") if sort_by == "created" else attr.get("added_datetime")
+                try:
+                    return datetime.fromisoformat(dt_str)
+                except:
+                    return datetime.min
+
+            # Sort images by selected field
+            image_items.sort(key=get_sort_value, reverse=True)
+
+            # Keep only filenames for rendering
+            sorted_filenames = [filename for filename, _ in image_items]
+
+            return render_template('index.html', images=sorted_filenames, sort_by=sort_by)
 
         @self.app.route('/upload', methods=['POST'])
         def upload():
+            sort_by = request.args.get("sort", "added")
             if 'images' not in request.files:
                 return redirect(url_for('index'))
 
@@ -40,15 +59,16 @@ class UiProvider:
                 if file and file.filename != '':
                     self.image_provider.save_image(file)
 
-            return redirect(url_for('index'))
+            return redirect(url_for('index', sort=sort_by))
 
         @self.app.route('/delete/<filename>', methods=['POST'])
         def delete(filename):
+            sort_by = request.args.get("sort", "added")
             if filename:
                 self.image_provider.delete_image(filename)
                 
 
-            return redirect(url_for('index'))
+            return redirect(url_for('index', sort=sort_by))
 
     def run(self):
         print("[UiProvider] Starting UI provider...")
