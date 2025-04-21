@@ -1,7 +1,7 @@
 from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for
-import os
 from datetime import datetime
+from collections import defaultdict
 
 
 class UiProvider:
@@ -27,26 +27,29 @@ class UiProvider:
         
         @self.app.route('/')
         def index():
-            sort_by = request.args.get("sort", "added")  # "created" or "added"
+            sort_by = request.args.get("sort", "added")
+            image_meta = self.image_provider.get_images()
 
-            image_meta_dict = self.image_provider.get_images()  # {uuid: meta}
-            image_items = list(image_meta_dict.items())  # [(filename, metadata), ...]
+            grouped_by_year = defaultdict(list)
 
-            def get_sort_value(item):
-                attr = item[1].get("attribute", {})
+            for filename, meta in image_meta.items():
+                attr = meta.get("attribute", {})
                 dt_str = attr.get("created_datetime") if sort_by == "created" else attr.get("added_datetime")
+
                 try:
-                    return datetime.fromisoformat(dt_str)
+                    dt = datetime.fromisoformat(dt_str)
+                    year = dt.year
                 except:
-                    return datetime.min
+                    year = "Unknown"
 
-            # Sort images by selected field
-            image_items.sort(key=get_sort_value, reverse=True)
+                grouped_by_year[year].append((dt_str, filename))
 
-            # Keep only filenames for rendering
-            sorted_filenames = [filename for filename, _ in image_items]
+            # Sort years descending, and each image list by datetime
+            grouped_sorted = dict()
+            for year in sorted(grouped_by_year.keys(), reverse=True):
+                grouped_sorted[year] = sorted(grouped_by_year[year], key=lambda x: x[0], reverse=True)
 
-            return render_template('index.html', images=sorted_filenames, sort_by=sort_by)
+            return render_template("index.html", groups=grouped_sorted, sort_by=sort_by)
 
         @self.app.route('/upload', methods=['POST'])
         def upload():

@@ -28,7 +28,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="p-4 max-w-6xl mx-auto">
+    <main class="p-4 max-w-7xl mx-auto">
 
         <!-- Sort Control -->
         <div class="flex justify-end mb-4">
@@ -41,31 +41,42 @@
                 </select>
             </form>
         </div>
-
-        <!-- Gallery -->
-        {% if images %}
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {% for image in images %}
-                <div class="relative group overflow-hidden rounded-lg shadow aspect-[3/4] border border-[#5F8B82]/20">
-                    <img src="{{ url_for('static', filename='uploads/preview/' ~ image) }}" alt="{{ image }}"
-                        class="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105">
-
-                    <!-- Delete Button -->
-                    <form action="{{ url_for('delete', filename=image) }}?sort={{ sort_by }}" method="post"
-                        class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
-                        <input type="hidden" name="sort" value="{{ sort_by }}">
-                        <button type="submit"
-                            class="bg-[#E49A56] text-white hover:bg-[#d88c4e] w-6 h-6 rounded-full flex items-center justify-center text-sm transition">
-                            ✕
-                        </button>
-                    </form>
+    
+        {% if groups %}
+            {% for year, images in groups.items() %}
+            <section class="grid grid-cols-[auto_1fr] gap-4 items-start relative {% if not loop.first %}mt-16{% endif %}">
+                <!-- Sticky Year Label -->
+                <div class="flex justify-end pr-2 sm:pr-4 min-w-[4rem] sm:min-w-[6rem]">
+                    <div class="sticky top-24 text-4xl sm:text-6xl font-extrabold text-[#4E3629]/10 leading-none select-none">
+                        {{ year }}
+                    </div>
                 </div>
-                {% endfor %}
-            </div>
+    
+                <!-- Image Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {% for _, image in images %}
+                    <div class="relative group overflow-hidden rounded-lg shadow aspect-[3/4] border border-[#5F8B82]/20">
+                        <img src="{{ url_for('static', filename='uploads/preview/' ~ image) }}" alt="{{ image }}"
+                            class="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105">
+    
+                        <!-- Delete Button -->
+                        <form action="{{ url_for('delete', filename=image) }}?sort={{ sort_by }}" method="post"
+                            class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                            <input type="hidden" name="sort" value="{{ sort_by }}">
+                            <button type="submit"
+                                class="bg-[#E49A56] text-white hover:bg-[#d88c4e] w-6 h-6 rounded-full flex items-center justify-center text-sm transition">
+                                ✕
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
         {% else %}
             <p class="text-center text-[#4E3629] mt-16 text-lg">No images yet. Be the first to capture a moment 📷</p>
         {% endif %}
     </main>
-
+    
 </body>
 </html>
