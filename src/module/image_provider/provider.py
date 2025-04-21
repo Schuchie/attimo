@@ -108,12 +108,11 @@ class ImageProvider:
         attributes = {
             "image": original_filename,
             "location": {},
-            "created_datetime": None,
+            "created_datetime": datetime.now().isoformat(),
             "added_datetime": datetime.now().isoformat(),
             "raw_exif": exif_data
         }
-
-        print(exif_data)
+        
         exif_string = exif_data.get("DateTimeOriginal") or exif_data.get("DateTime")
     
         if exif_string and isinstance(exif_string, str):

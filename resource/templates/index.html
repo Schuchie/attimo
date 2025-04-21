@@ -57,8 +57,9 @@
                     {% for _, image in images %}
                     <div class="relative group overflow-hidden rounded-lg shadow aspect-[3/4] border border-[#5F8B82]/20">
                         <img src="{{ url_for('static', filename='uploads/preview/' ~ image) }}" alt="{{ image }}"
+                            loading="lazy"
                             class="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105">
-    
+
                         <!-- Delete Button -->
                         <form action="{{ url_for('delete', filename=image) }}?sort={{ sort_by }}" method="post"
                             class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">

@@ -27,7 +27,7 @@ class UiProvider:
         
         @self.app.route('/')
         def index():
-            sort_by = request.args.get("sort", "added")
+            sort_by = request.args.get("sort", "created")
             image_meta = self.image_provider.get_images()
 
             grouped_by_year = defaultdict(list)
@@ -53,7 +53,7 @@ class UiProvider:
 
         @self.app.route('/upload', methods=['POST'])
         def upload():
-            sort_by = request.args.get("sort", "added")
+            sort_by = request.args.get("sort", "created")
             if 'images' not in request.files:
                 return redirect(url_for('index'))
 
@@ -66,7 +66,7 @@ class UiProvider:
 
         @self.app.route('/delete/<filename>', methods=['POST'])
         def delete(filename):
-            sort_by = request.args.get("sort", "added")
+            sort_by = request.args.get("sort", "created")
             if filename:
                 self.image_provider.delete_image(filename)
                 
