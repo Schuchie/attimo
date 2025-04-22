@@ -109,4 +109,4 @@ class UiProvider:
 
     def run(self):
         print("[UiProvider] Starting UI provider...")
-        self.app.run(host=self.config_provider.get('web.host', '0.0.0.0'), port=self.config_provider.get("web.port", 8080), debug=True)
+        self.app.run(host=self.config_provider.get('web.host', '0.0.0.0'), port=self.config_provider.get("web.port", 8080), debug=True, threaded=False)

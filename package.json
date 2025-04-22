@@ -1,0 +1,28 @@
+{
+  "name": "attimo",
+  "version": "1.0.0",
+  "description": "source venv/bin/activate deactivate",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tailwindcss -i ./resource/styles/input.css -o ./static/styles.css --minify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Schuchie/attimo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Schuchie/attimo/issues"
+  },
+  "homepage": "https://github.com/Schuchie/attimo#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.4",
+    "tailwindcss": "^4.1.4"
+  }
+}

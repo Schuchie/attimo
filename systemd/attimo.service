@@ -1,0 +1,13 @@
+[Unit]
+Description=Attimo Flask App
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/projects/attimo
+ExecStart=/home/pi/projects/attimo/venv/bin/python3 /home/pi/projects/attimo/src/main.py
+Restart=on-failure
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
