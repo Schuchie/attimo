@@ -33,19 +33,20 @@
                      class="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105">
 
                 <!-- Delete Button -->
-                <form action="{{ url_for('delete', filename=image) }}?sort={{ sort_by }}" method="post"
-                      class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                <form action="{{ url_for('delete', uuid=uuid) }}?sort={{ sort_by }}" method="post"
+                    class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
                     <input type="hidden" name="sort" value="{{ sort_by }}">
                     <button type="submit"
-                            class="bg-[#E49A56] text-white hover:bg-[#d88c4e] w-6 h-6 rounded-full flex items-center justify-center text-sm transition">
-                        ✕
+                        class="bg-[#E49A56] text-white hover:bg-[#d88c4e] w-7 h-7 rounded-full flex items-center justify-center text-sm shadow">
+                    ✕
                     </button>
                 </form>
+
                 <!-- Edit Button -->
-                <a href="{{ url_for('crop', uuid=uuid) }}"
-                    class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition bg-[#5F8B82] text-white hover:bg-[#4a726b] w-6 h-6 rounded-full flex items-center justify-center text-xs shadow">
-                    ✎
+                <a href="{{ url_for('crop', uuid=uuid) }}" class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition bg-[#5F8B82] text-white hover:bg-[#4a726b] w-7 h-7 rounded-full flex items-center justify-center text-sm shadow">
+                ✎
                 </a>
+
 
             </div>
             {% endfor %}

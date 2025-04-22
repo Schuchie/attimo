@@ -193,8 +193,9 @@ class ImageProvider:
 
 
 
-    def delete_image(self, filename):
+    def delete_image(self, file_uuid):
         
+        filename = f"{file_uuid}.jpeg"
         if filename in self.images["images"]:
             del self.images["images"][filename]
         

@@ -66,11 +66,11 @@ class UiProvider:
 
             return redirect(url_for('index', sort=sort_by))
 
-        @self.app.route('/delete/<filename>', methods=['POST'])
-        def delete(filename):
+        @self.app.route('/delete/<uuid>', methods=['POST'])
+        def delete(uuid):
             sort_by = request.args.get("sort", "created")
-            if filename:
-                self.image_provider.delete_image(filename)
+            if uuid:
+                self.image_provider.delete_image(uuid)
                 
 
             return redirect(url_for('index', sort=sort_by))
