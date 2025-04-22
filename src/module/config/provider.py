@@ -38,3 +38,15 @@ class ConfigProvider:
 
     def all(self):
         return self.config
+
+    def set(self, dotted_key: str, value):
+        if not self.config:
+            return
+        keys = dotted_key.split(".")
+        cfg = self.config
+        for k in keys[:-1]:
+            cfg = cfg.setdefault(k, {})
+        cfg[keys[-1]] = value
+
+        with open(self.config_path, "w") as f:
+            yaml.safe_dump(self.config, f)

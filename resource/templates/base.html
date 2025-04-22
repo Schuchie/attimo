@@ -1,0 +1,43 @@
+<!-- resource/templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Attimo{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F3E9D6] min-h-screen text-[#4E3629]">
+
+  <!-- Header -->
+  <header class="sticky top-0 bg-[#F3E9D6] z-10 border-b border-[#5F8B82]/30 px-4 py-2 flex flex-wrap justify-between items-center shadow-sm">
+    <!-- Logo and Navigation -->
+    <div class="flex items-center gap-4">
+      <a href="/" class="flex items-center gap-2">
+        <img src="{{ url_for('static', filename='images/attimo_transparent_without_name.png') }}" alt="Attimo Logo" class="w-8 h-auto">
+        <h1 class="text-xl font-bold text-[#4E3629]">Attimo</h1>
+      </a>
+      <a href="{{ url_for('setting') }}" class="text-sm text-[#4E3629]/70 hover:text-[#4E3629] transition pt-1">
+        ⚙️ Settings
+      </a>
+    </div>
+  
+    <!-- Upload Button -->
+    <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="flex items-center gap-2">
+      <input type="file" name="images" accept="image/*" required class="hidden" id="imageInput" onchange="this.form.submit()" multiple>
+      <input type="hidden" name="sort" value="{{ sort_by | default('created') }}">
+      <label for="imageInput"
+        class="bg-[#C56A41] hover:bg-[#b45f3a] text-white px-4 py-2 rounded shadow cursor-pointer text-sm transition">
+        📤 Upload Images
+      </label>
+    </form>
+  </header>
+  
+
+  <!-- Page Content -->
+  <main class="p-4 max-w-7xl mx-auto">
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

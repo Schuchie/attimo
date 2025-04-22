@@ -5,9 +5,10 @@ from collections import defaultdict
 
 
 class UiProvider:
-    def __init__(self,  root_dir: Path = None , config_provider=None, image_provider=None):
+    def __init__(self,  root_dir: Path = None , config_provider=None, image_provider=None, setting_provider=None):
         self.config_provider = config_provider
         self.image_provider = image_provider
+        self.setting_provider = setting_provider
 
         self.app = Flask(__name__)
          # Set folders via config
@@ -35,6 +36,7 @@ class UiProvider:
             for filename, meta in image_meta.items():
                 attr = meta.get("attribute", {})
                 dt_str = attr.get("created_datetime") if sort_by == "created" else attr.get("added_datetime")
+                uuid = meta.get("uuid") or Path(filename).stem
 
                 try:
                     dt = datetime.fromisoformat(dt_str)
@@ -42,14 +44,14 @@ class UiProvider:
                 except:
                     year = "Unknown"
 
-                grouped_by_year[year].append((dt_str, filename))
+                grouped_by_year[year].append((dt_str, uuid, filename))
 
-            # Sort years descending, and each image list by datetime
             grouped_sorted = dict()
             for year in sorted(grouped_by_year.keys(), reverse=True):
                 grouped_sorted[year] = sorted(grouped_by_year[year], key=lambda x: x[0], reverse=True)
 
             return render_template("index.html", groups=grouped_sorted, sort_by=sort_by)
+
 
         @self.app.route('/upload', methods=['POST'])
         def upload():
@@ -72,6 +74,38 @@ class UiProvider:
                 
 
             return redirect(url_for('index', sort=sort_by))
+        
+        @self.app.route('/setting', methods=['GET', 'POST'])
+        def setting():
+            if request.method == 'POST':
+                for key in request.form:
+                    value = request.form[key]
+                    # Versuche int-Konvertierung, sonst string speichern
+                    if value.isdigit():
+                        value = int(value)
+                    self.setting_provider.set(key, value)
+                return redirect(url_for('setting'))
+
+            all_settings = self.setting_provider.get_all()
+            return render_template("setting.html", settings=all_settings)
+
+        @self.app.route("/crop/<uuid>", methods=["GET", "POST"])
+        def crop(uuid):
+            filename = f"{uuid}.jpeg"
+
+            if request.method == "POST":
+                x = int(float(request.form['x']))
+                y = int(float(request.form['y']))
+                w = int(float(request.form['width']))
+                h = int(float(request.form['height']))
+                rotation = int(request.form.get("rotation", 0))
+
+                self.image_provider.crop_image(filename, x, y, w, h, rotation)
+                return redirect(url_for("index"))
+
+            crop_rect = self.image_provider.get_crop_rect(filename)
+            return render_template("crop.html", filename=filename, crop_rect=crop_rect)
+
 
     def run(self):
         print("[UiProvider] Starting UI provider...")

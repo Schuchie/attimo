@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Crop Image – Attimo{% endblock %}
+
+{% block content %}
+<!-- Fullscreen Crop Area -->
+<div class="fixed inset-0 z-0 bg-black/90">
+  <img id="image" src="{{ url_for('static', filename='uploads/raw/' ~ filename) }}" class="h-full mx-auto block">
+</div>
+
+<!-- Live Info Box -->
+<div id="crop-info"
+     class="fixed top-20 left-4 z-10 text-xs text-white bg-black/60 px-3 py-2 rounded shadow">
+  W: — / H: —
+</div>
+
+<!-- Rotate Button -->
+<button id="rotate-btn"
+        type="button"
+        class="fixed top-20 right-4 z-10 bg-white/80 text-black text-xs px-3 py-1 rounded shadow hover:bg-white">
+  🔄 90°
+</button>
+
+<!-- Floating Crop Button -->
+<form method="POST" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-10">
+  <input type="hidden" name="x">
+  <input type="hidden" name="y">
+  <input type="hidden" name="width">
+  <input type="hidden" name="height">
+  <input type="hidden" name="rotation" id="rotation-input" 
+       value="{{ crop_rect.rotation if crop_rect and crop_rect.rotation is defined else 0 }}">
+
+  <button type="submit"
+          class="bg-[#C56A41] hover:bg-[#b45f3a] text-white px-4 py-2 rounded shadow text-sm transition">
+    💾 Zuschneiden & Speichern
+  </button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<link href="{{ url_for('static', filename='js/cropper.min.css') }}" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/cropper.min.js') }}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const image = document.getElementById('image');
+  const rotateBtn = document.getElementById('rotate-btn');
+  const rotationInput = document.getElementById('rotation-input');
+  const cropInfo = document.getElementById('crop-info');
+  const inputX = document.querySelector("input[name='x']");
+  const inputY = document.querySelector("input[name='y']");
+  const inputW = document.querySelector("input[name='width']");
+  const inputH = document.querySelector("input[name='height']");
+
+  let currentRotation = parseInt(rotationInput.value || "0") || 0;
+
+  const naturalWidth = image.naturalWidth;
+  const scaleFactor = image.clientWidth / naturalWidth;
+  const minCropBoxWidth = 1600 * scaleFactor;
+  const minCropBoxHeight = 1200 * scaleFactor;
+
+  const cropper = new Cropper(image, {
+    aspectRatio: 3 / 4,
+    viewMode: 1,
+    autoCropArea: 0.9,
+    dragMode: 'move',
+    zoomable: true,
+    movable: true,
+    cropBoxResizable: true,
+    cropBoxMovable: true,
+    minCropBoxWidth: minCropBoxWidth,
+    minCropBoxHeight: minCropBoxHeight,
+    data: {
+      {% if crop_rect %}
+        x: {{ crop_rect.x }},
+        y: {{ crop_rect.y }},
+        width: {{ crop_rect.width }},
+        height: {{ crop_rect.height }},
+        rotate: {{ crop_rect.rotation if crop_rect.rotation is defined else 0 }}
+      {% endif %}
+    },
+    ready() {
+      if (currentRotation) {
+        cropper.rotateTo(currentRotation);
+      }
+    },
+    crop(event) {
+      const { x, y, width, height } = event.detail;
+      inputX.value = Math.round(x);
+      inputY.value = Math.round(y);
+      inputW.value = Math.round(width);
+      inputH.value = Math.round(height);
+      cropInfo.innerText = `W: ${Math.round(width)}px / H: ${Math.round(height)}px`;
+    }
+  });
+
+  rotateBtn.addEventListener("click", () => {
+    currentRotation = (currentRotation + 90) % 360;
+    cropper.rotateTo(currentRotation);
+    rotationInput.value = currentRotation;
+  });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Settings – Attimo{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+    <span class="text-3xl">⚙️</span> Settings
+</h2>
+
+<form method="post" class="space-y-6">
+    <div>
+        <label for="interval" class="block text-sm font-medium text-[#4E3629] mb-1">
+            🕒 Image Change Interval (in seconds)
+        </label>
+        <input type="number" id="interval" name="interval" value="{{ settings.interval }}"
+               class="w-full max-w-xs border border-[#5F8B82]/30 rounded px-3 py-2 bg-white shadow-sm text-[#4E3629]">
+    </div>
+
+    <button type="submit"
+            class="bg-[#C56A41] hover:bg-[#b45f3a] text-white px-4 py-2 rounded shadow text-sm transition flex items-center gap-2">
+        💾 Save Settings
+    </button>
+</form>
+{% endblock %}

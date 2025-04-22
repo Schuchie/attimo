@@ -14,6 +14,7 @@ class ImageProvider:
         self.upload_folder = Path.joinpath(root_dir, "static", "uploads")
         self.raw_folder = self.upload_folder / "raw"
         self.preview_folder = self.upload_folder / "preview"
+        self.eink_folder = self.upload_folder / "eink"
         self.image_data_file = self.upload_folder / "image_metadata.json"
         self.load()
 
@@ -46,37 +47,60 @@ class ImageProvider:
         print(f"[ImageProvider] Saving image to {self.raw_folder}")
 
         original_filename = file.filename
-        ext = os.path.splitext(original_filename)[1].lower()  # Preserve file extension
-        uuid_filename = f"{uuid.uuid4().hex}{ext}"
+        img_uuid = uuid.uuid4().hex
+        uuid_filename = f"{img_uuid}.jpeg"
 
         rawpath = os.path.join(self.raw_folder, uuid_filename)
-        file.save(rawpath)
+        os.makedirs(self.raw_folder, exist_ok=True)
 
         readable_exif = {}
 
-        # Create low-res preview
+        # Pfade für Vorschau und E-Ink
         os.makedirs(self.preview_folder, exist_ok=True)
         preview_path = os.path.join(self.preview_folder, uuid_filename)
 
+        os.makedirs(self.eink_folder, exist_ok=True)
+        eink_path = os.path.join(self.eink_folder, uuid_filename)
+
         try:
-            with Image.open(rawpath) as img:
+            with Image.open(file.stream) as img:
+                # EXIF sichern (für JSON)
                 raw_exif = img.getexif()
                 readable_exif = self.clean_exif_for_json(raw_exif)
-                img = ImageOps.exif_transpose(img)
-                img.thumbnail((600, 800))
-                img.save(preview_path, optimize=True, quality=70)
-                print(f"[ImageProvider] Created preview for {uuid_filename} at {preview_path}")
+
+                # EXIF-bereinigtes Bild erzeugen
+                img = ImageOps.exif_transpose(img).convert("RGB")
+
+                # Vorschau speichern
+                preview_img = img.copy()
+                preview_img.thumbnail((400, 600))
+                preview_img.save(preview_path, format="JPEG", optimize=True, quality=70)
+
+                # E-Ink speichern
+                eink_img = img.copy()
+                eink_img.thumbnail((1200, 1600))
+                eink_img.save(eink_path, format="JPEG", optimize=True, quality=85)
+
+                # Raw abspeichern – EXIF entfernen
+                img.save(rawpath, format="JPEG", optimize=True, quality=90)
+
+                print(f"[ImageProvider] Saved preview and eink image for {uuid_filename}")
+
         except Exception as e:
             print(f"[ImageProvider] Failed to create preview for {uuid_filename}: {e}")
             raise e
-        
+
+        # Metadaten speichern
         self.images["images"][uuid_filename] = {
+            "uuid": img_uuid,
             "raw": rawpath,
             "preview": preview_path,
+            "eink": eink_path,
             "attribute": self.extract_attribute_data(readable_exif, original_filename),
         }
         self.save()
         print(f"[ImageProvider] Image {original_filename} as {uuid_filename} saved successfully.")
+
 
     
     def clean_exif_for_json(self, exif_data):
@@ -123,16 +147,69 @@ class ImageProvider:
         
         return attributes
     
+    def crop_image(self, filename: str, x: int, y: int, w: int, h: int, rotation: int = 0):
+        uuid = Path(filename).stem
+        raw_path = os.path.join(self.raw_folder, filename)
+        preview_path = os.path.join(self.preview_folder, f"{uuid}.jpeg")
+        eink_path = os.path.join(self.eink_folder, f"{uuid}.jpeg")
+
+        with Image.open(raw_path) as img:
+            img = ImageOps.exif_transpose(img).convert("RGB")
+
+            if rotation:
+                rotation_for_pillow = (360 - rotation) % 360
+                print(f"[ImageProvider] Rotating image by {rotation_for_pillow} degrees (Cropper input: {rotation})")
+                img = img.rotate(rotation_for_pillow, expand=True)
+
+
+            cropped = img.crop((x, y, x + w, y + h))
+
+            preview = cropped.copy()
+            preview.thumbnail((400, 600))
+            preview.save(preview_path, format="JPEG", optimize=True, quality=70)
+
+            eink = cropped.copy()
+            eink.thumbnail((1600, 1200))
+            eink.save(eink_path, format="JPEG", optimize=True, quality=85)
+
+        image_data = self.images["images"].get(filename, {})
+        image_data.setdefault("attribute", {})["crop_rect"] = {
+            "x": x, "y": y, "width": w, "height": h,
+            "rotation": rotation
+        }
+        self.save()
+
+
+
+
+
+    def get_crop_rect(self, uuid_filename: str):
+        image_data = self.images["images"].get(uuid_filename)
+        if not image_data:
+            return None
+
+        attributes = image_data.get("attribute", {})
+        return attributes.get("crop_rect")
+
+
+
     def delete_image(self, filename):
         
         if filename in self.images["images"]:
             del self.images["images"][filename]
+        
         filepath = os.path.join(self.raw_folder, filename)
         if os.path.exists(filepath):
             os.remove(filepath)
+        
         filepath = os.path.join(self.preview_folder, filename)
         if os.path.exists(filepath):
             os.remove(filepath)
+        
+        filepath = os.path.join(self.eink_folder, filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
         self.save()
         print(f"[ImageProvider] Deleted image {filename} and its data.")
         

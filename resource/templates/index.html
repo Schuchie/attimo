@@ -1,83 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Attimo Gallery</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-[#F3E9D6] min-h-screen">
+{% extends "base.html" %}
+{% block title %}Gallery – Attimo{% endblock %}
 
-    <!-- Header -->
-    <header class="sticky top-0 bg-[#F3E9D6] z-10 border-b border-[#5F8B82]/30 px-4 py-2 flex justify-between items-center shadow-sm">
-        <!-- Logo & Title -->
-        <div class="flex items-center gap-2">
-            <img src="{{ url_for('static', filename='images/attimo_transparent_without_name.png') }}" alt="Attimo Logo" class="w-8 h-auto">
-            <h1 class="text-xl font-bold text-[#4E3629]">Attimo</h1>
+{% block content %}
+<!-- Sort Control -->
+<div class="flex justify-end mb-4">
+    <form method="get" class="flex items-center gap-2 text-sm text-[#4E3629]">
+        <label for="sort_by" class="text-[#4E3629]/60">Sort by:</label>
+        <select id="sort_by" name="sort" onchange="this.form.submit()"
+            class="bg-[#ffffff]/80 border border-[#4E3629]/20 rounded px-2 py-1 text-[#4E3629]/80 shadow-sm">
+            <option value="added" {% if sort_by == 'added' %}selected{% endif %}>Date Added</option>
+            <option value="created" {% if sort_by == 'created' %}selected{% endif %}>Date Taken</option>
+        </select>
+    </form>
+</div>
+
+{% if groups %}
+    {% for year, images in groups.items() %}
+    <section class="grid grid-cols-[auto_1fr] gap-4 items-start relative {% if not loop.first %}mt-16{% endif %}">
+        <!-- Sticky Year Label -->
+        <div class="flex justify-end pr-2 sm:pr-4 min-w-[4rem] sm:min-w-[6rem]">
+            <div class="sticky top-24 text-4xl sm:text-6xl font-extrabold text-[#4E3629]/10 leading-none select-none">
+                {{ year }}
+            </div>
         </div>
 
-        <!-- Upload Button -->
-        <form action="/upload" method="post" enctype="multipart/form-data" class="flex items-center gap-2">
-            <input type="file" name="images" accept="image/*" required class="hidden" id="imageInput" onchange="this.form.submit()" multiple>
-            <input type="hidden" name="sort" value="{{ sort_by }}">
-            <label for="imageInput"
-                class="bg-[#C56A41] hover:bg-[#b45f3a] text-white px-4 py-2 rounded shadow cursor-pointer text-sm transition">
-                📤 Upload Images
-            </label>
-        </form>
-    </header>
+        <!-- Image Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {% for _, uuid, image in images %}
+            <div class="relative group overflow-hidden rounded-lg shadow aspect-[3/4] border border-[#5F8B82]/20 min-h-[150px]">
+                <img src="{{ url_for('static', filename='uploads/preview/' ~ image) }}" alt="{{ image }}"
+                     loading="lazy"
+                     class="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105">
 
-    <!-- Main Content -->
-    <main class="p-4 max-w-7xl mx-auto">
+                <!-- Delete Button -->
+                <form action="{{ url_for('delete', filename=image) }}?sort={{ sort_by }}" method="post"
+                      class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                    <button type="submit"
+                            class="bg-[#E49A56] text-white hover:bg-[#d88c4e] w-6 h-6 rounded-full flex items-center justify-center text-sm transition">
+                        ✕
+                    </button>
+                </form>
+                <!-- Edit Button -->
+                <a href="{{ url_for('crop', uuid=uuid) }}"
+                    class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition bg-[#5F8B82] text-white hover:bg-[#4a726b] w-6 h-6 rounded-full flex items-center justify-center text-xs shadow">
+                    ✎
+                </a>
 
-        <!-- Sort Control -->
-        <div class="flex justify-end mb-4">
-            <form method="get" class="flex items-center gap-2 text-sm text-[#4E3629]">
-                <label for="sort_by" class="text-[#4E3629]/60">Sort by:</label>
-                <select id="sort_by" name="sort" onchange="this.form.submit()"
-                    class="bg-[#ffffff]/80 border border-[#4E3629]/20 rounded px-2 py-1 text-[#4E3629]/80 shadow-sm">
-                    <option value="added" {% if sort_by == 'added' %}selected{% endif %}>Date Added</option>
-                    <option value="created" {% if sort_by == 'created' %}selected{% endif %}>Date Taken</option>
-                </select>
-            </form>
-        </div>
-    
-        {% if groups %}
-            {% for year, images in groups.items() %}
-            <section class="grid grid-cols-[auto_1fr] gap-4 items-start relative {% if not loop.first %}mt-16{% endif %}">
-                <!-- Sticky Year Label -->
-                <div class="flex justify-end pr-2 sm:pr-4 min-w-[4rem] sm:min-w-[6rem]">
-                    <div class="sticky top-24 text-4xl sm:text-6xl font-extrabold text-[#4E3629]/10 leading-none select-none">
-                        {{ year }}
-                    </div>
-                </div>
-    
-                <!-- Image Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {% for _, image in images %}
-                    <div class="relative group overflow-hidden rounded-lg shadow aspect-[3/4] border border-[#5F8B82]/20">
-                        <img src="{{ url_for('static', filename='uploads/preview/' ~ image) }}" alt="{{ image }}"
-                            loading="lazy"
-                            class="w-full h-full object-cover rounded-lg transition-transform duration-200 hover:scale-105">
-
-                        <!-- Delete Button -->
-                        <form action="{{ url_for('delete', filename=image) }}?sort={{ sort_by }}" method="post"
-                            class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
-                            <input type="hidden" name="sort" value="{{ sort_by }}">
-                            <button type="submit"
-                                class="bg-[#E49A56] text-white hover:bg-[#d88c4e] w-6 h-6 rounded-full flex items-center justify-center text-sm transition">
-                                ✕
-                            </button>
-                        </form>
-                    </div>
-                    {% endfor %}
-                </div>
-            </section>
+            </div>
             {% endfor %}
-        {% else %}
-            <p class="text-center text-[#4E3629] mt-16 text-lg">No images yet. Be the first to capture a moment 📷</p>
-        {% endif %}
-    </main>
-    
-</body>
-</html>
+        </div>
+    </section>
+    {% endfor %}
+{% else %}
+    <p class="text-center text-[#4E3629] mt-16 text-lg">No images yet. Be the first to capture a moment 📷</p>
+{% endif %}
+{% endblock %}
